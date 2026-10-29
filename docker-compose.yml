@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: raingauge-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: SuperSecret123!
+      MYSQL_DATABASE: RainDB
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pSuperSecret123!"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  web:
+    container_name: raingauge-api
+    build:
+      context: .
+      dockerfile: RainGaugeServer/Dockerfile
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=RainDB;User=root;Password=SuperSecret123!;
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mariadb_data:
