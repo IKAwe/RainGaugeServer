@@ -25,7 +25,7 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseSwagger();
-app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RainGauge IoT API v1"));
+app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "RainGauge API v1"));
 
 app.MapControllers();
 app.Run();

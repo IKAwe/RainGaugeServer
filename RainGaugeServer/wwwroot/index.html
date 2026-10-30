@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rain Gauge IoT Dashboard</title>
+    <title>Rain gauge dashboard</title>
     <style>
         :root {
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
+            --secondary: #475569;
+            --secondary-hover: #334155;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text: #1e293b;
@@ -15,6 +17,7 @@
             --border: #e2e8f0;
             --success: #16a34a;
             --danger: #dc2626;
+            --danger-hover: #b91c1c;
         }
 
         * {
@@ -32,7 +35,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
@@ -63,17 +66,17 @@
         .card {
             background-color: var(--card-bg);
             border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
             border: 1px solid var(--border);
             padding: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .card-title {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 600;
             margin-bottom: 1rem;
-            color: #334155;
+            color: #1e293b;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -81,43 +84,75 @@
 
         .form-group {
             display: flex;
-            gap: 0.75rem;
-            align-items: center;
+            gap: 1rem;
+            align-items: flex-end;
             flex-wrap: wrap;
         }
 
-        input[type="number"] {
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .input-field label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        input[type="number"], input[type="datetime-local"] {
             padding: 0.6rem 0.9rem;
             font-size: 1rem;
             border: 1px solid var(--border);
             border-radius: 6px;
             outline: none;
-            width: 140px;
             transition: border-color 0.2s;
+            font-family: inherit;
         }
 
-        input[type="number"]:focus {
+        input[type="number"] {
+            width: 150px;
+        }
+
+        input[type="datetime-local"] {
+            width: 230px;
+        }
+
+        input:focus {
             border-color: var(--primary);
         }
 
         button {
             padding: 0.6rem 1.25rem;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 500;
             background-color: var(--primary);
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+            height: 42px;
         }
 
         button:hover {
             background-color: var(--primary-hover);
         }
 
+        button.btn-danger {
+            background-color: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        button.btn-danger:hover {
+            background-color: var(--danger);
+            color: #ffffff;
+        }
+
         button:disabled {
-            opacity: 0.6;
+            opacity: 0.55;
             cursor: not-allowed;
         }
 
@@ -127,6 +162,7 @@
             border: 1px solid var(--border);
             font-size: 0.875rem;
             padding: 0.4rem 0.8rem;
+            height: auto;
         }
 
         .btn-refresh:hover {
@@ -148,6 +184,54 @@
         .status-msg.error {
             color: var(--danger);
             display: block;
+        }
+
+        /* Cleaning Section Row */
+        .cleaning-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .cleaning-status {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .status-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .status-pill {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.2rem 0.65rem;
+            border-radius: 9999px;
+            letter-spacing: 0.025em;
+        }
+
+        .status-pill.idle {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .status-pill.pending {
+            background-color: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        .cleaning-note {
+            font-size: 0.875rem;
+            color: var(--muted);
         }
 
         .table-responsive {
@@ -198,37 +282,63 @@
 <body>
     <div class="container">
         <header>
-            <h1> Rain Gauge</h1>
-            <a href="/swagger" target="_blank" class="swagger-link">Open swagger API &rarr;</a>
+            <h1>Rain Gauge</h1>
+            <a href="/swagger" target="_blank" class="swagger-link">Open Swagger API &rarr;</a>
         </header>
 
+        <!-- Test data submission -->
         <section class="card">
-            <h2 class="card-title">Test data submission</h2>
+            <h2 class="card-title">Send test reading</h2>
             <form id="submissionForm" onsubmit="submitData(event)" class="form-group">
-                <label for="tipsCount">Tips count:</label>
-                <input type="number" id="tipsCount" name="tipsCount" min="0" value="1" required>
-                <button type="submit" id="submitBtn">Send to API</button>
+                <div class="input-field">
+                    <label for="millimeters">Rainfall (mm):</label>
+                    <input type="number" id="millimeters" name="millimeters" step="any" min="0" value="2.5" required>
+                </div>
+                <div class="input-field">
+                    <label for="deviceTimestamp">Device timestamp:</label>
+                    <input type="datetime-local" id="deviceTimestamp" name="deviceTimestamp" required>
+                </div>
+                <button type="submit" id="submitBtn">Send reading</button>
             </form>
             <div id="statusMessage" class="status-msg"></div>
         </section>
 
+        <!-- Gauge cleaning -->
+        <section class="card">
+            <h2 class="card-title">Gauge cleaning</h2>
+            <div class="cleaning-row">
+                <div class="cleaning-status">
+                    <span class="status-label">Status:</span>
+                    <span id="cleanStatusPill" class="status-pill idle">Ready</span>
+                    <span id="cleanStatusDesc" class="cleaning-note">No active requests.</span>
+                </div>
+                <div>
+                    <button type="button" id="cleanBtn" onclick="triggerClean()">Clean now</button>
+                    <button type="button" class="btn-danger" id="cancelCleanBtn" onclick="cancelClean()" style="display: none;">Cancel request</button>
+                </div>
+            </div>
+            <div id="cleanStatusMessage" class="status-msg"></div>
+        </section>
+
+        <!-- Recent readings -->
         <section class="card">
             <div class="card-title">
-                <span>Last records</span>
+                <span>Recent readings (last 20)</span>
                 <button type="button" class="btn-refresh" onclick="fetchLogs()">Refresh</button>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 80px;">ID</th>
-                            <th>Timestamp</th>
-                            <th style="width: 140px;">Tips Count</th>
+                            <th style="width: 70px;">ID</th>
+                            <th>Device timestamp</th>
+                            <th>Database timestamp</th>
+                            <th style="width: 140px;">Rainfall (mm)</th>
                         </tr>
                     </thead>
                     <tbody id="logsTableBody">
                         <tr>
-                            <td colspan="3" class="empty-state">Loading records...</td>
+                            <td colspan="4" class="empty-state">Loading records...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -237,47 +347,61 @@
     </div>
 
     <script>
+        let isCleanPending = false;
+
+        function setCurrentDateTime() {
+            const now = new Date();
+            const offset = now.getTimezoneOffset();
+            const local = new Date(now.getTime() - (offset * 60 * 1000));
+            document.getElementById('deviceTimestamp').value = local.toISOString().slice(0, 16);
+        }
+
         async function fetchLogs() {
             const tableBody = document.getElementById('logsTableBody');
             try {
                 const response = await fetch('/api/device/logs');
                 if (!response.ok) {
-                    throw new Error(`Server returned HTTP ${response.status}`);
+                    throw new Error(`Server error: HTTP ${response.status}`);
                 }
                 const logs = await response.json();
                 
                 if (!logs || logs.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="3" class="empty-state">No records found in database.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">No records found.</td></tr>';
                     return;
                 }
 
                 tableBody.innerHTML = logs.map(item => {
-                    const localTime = new Date(item.timestamp).toLocaleString();
+                    const deviceDate = new Date(item.deviceTimestamp).toLocaleString();
+                    const createdDate = new Date(item.createdAt).toLocaleString();
                     return `
                         <tr>
                             <td>#${item.id}</td>
-                            <td>${localTime}</td>
-                            <td><span class="badge">${item.tipsCount}</span></td>
+                            <td>${deviceDate}</td>
+                            <td>${createdDate}</td>
+                            <td><span class="badge">${item.millimeters} mm</span></td>
                         </tr>
                     `;
                 }).join('');
             } catch (error) {
-                console.error('Failed to fetch logs:', error);
-                tableBody.innerHTML = `<tr><td colspan="3" class="empty-state" style="color: var(--danger);">Failed to load logs: ${error.message}</td></tr>`;
+                console.error('Failed to load logs:', error);
+                tableBody.innerHTML = `<tr><td colspan="4" class="empty-state" style="color: var(--danger);">Failed to load logs: ${error.message}</td></tr>`;
             }
         }
 
         async function submitData(event) {
             event.preventDefault();
 
-            const input = document.getElementById('tipsCount');
+            const mmInput = document.getElementById('millimeters');
+            const timeInput = document.getElementById('deviceTimestamp');
             const submitBtn = document.getElementById('submitBtn');
             const statusDiv = document.getElementById('statusMessage');
-            const tipsCount = parseInt(input.value, 10);
 
-            if (isNaN(tipsCount) || tipsCount < 0) {
+            const millimeters = parseFloat(mmInput.value);
+            const deviceTimestamp = timeInput.value ? new Date(timeInput.value).toISOString() : new Date().toISOString();
+
+            if (isNaN(millimeters) || millimeters < 0) {
                 statusDiv.className = 'status-msg error';
-                statusDiv.textContent = 'Please enter a valid non-negative number.';
+                statusDiv.textContent = 'Please enter a valid rainfall value in millimeters (>= 0).';
                 return;
             }
 
@@ -291,20 +415,22 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ tipsCount: tipsCount })
+                    body: JSON.stringify({ 
+                        millimeters: millimeters,
+                        deviceTimestamp: deviceTimestamp
+                    })
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Server error: HTTP ${response.status}`);
+                    throw new Error(`HTTP ${response.status}`);
                 }
 
-                const data = await response.json();
                 statusDiv.className = 'status-msg success';
-                statusDiv.textContent = `Successfully recorded (tips: ${tipsCount})`;
+                statusDiv.textContent = `Saved: ${millimeters} mm.`;
 
                 await fetchLogs();
             } catch (error) {
-                console.error('Upload error:', error);
+                console.error('Submission error:', error);
                 statusDiv.className = 'status-msg error';
                 statusDiv.textContent = `Submission failed: ${error.message}`;
             } finally {
@@ -312,7 +438,122 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', fetchLogs);
+        function updateCleanUI(pending) {
+            isCleanPending = pending;
+            const cleanBtn = document.getElementById('cleanBtn');
+            const cancelBtn = document.getElementById('cancelCleanBtn');
+            const pill = document.getElementById('cleanStatusPill');
+            const desc = document.getElementById('cleanStatusDesc');
+
+            if (pending) {
+                pill.className = 'status-pill pending';
+                pill.textContent = 'Pending';
+                desc.textContent = 'Waiting for device to start...';
+                cleanBtn.disabled = true;
+                cleanBtn.style.display = 'none';
+                cancelBtn.style.display = 'inline-block';
+                cancelBtn.disabled = false;
+            } else {
+                pill.className = 'status-pill idle';
+                pill.textContent = 'Ready';
+                desc.textContent = 'No active requests.';
+                cleanBtn.disabled = false;
+                cleanBtn.style.display = 'inline-block';
+                cancelBtn.style.display = 'none';
+                cancelBtn.disabled = true;
+            }
+        }
+
+        async function checkCleanStatus() {
+            try {
+                const response = await fetch('/api/device/clean-status');
+                if (!response.ok) return;
+                const data = await response.json();
+                updateCleanUI(data.isPending);
+            } catch (err) {
+                console.error('Failed to check clean status:', err);
+            }
+        }
+
+        async function triggerClean() {
+            const cleanBtn = document.getElementById('cleanBtn');
+            const statusDiv = document.getElementById('cleanStatusMessage');
+
+            cleanBtn.disabled = true;
+            statusDiv.className = 'status-msg';
+            statusDiv.textContent = '';
+
+            try {
+                const response = await fetch('/api/device/trigger-clean', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (response.status === 409) {
+                    statusDiv.className = 'status-msg error';
+                    statusDiv.textContent = data.message || 'Cleaning request is already pending.';
+                    updateCleanUI(true);
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+
+                statusDiv.className = 'status-msg success';
+                statusDiv.textContent = 'Cleaning request sent.';
+                updateCleanUI(true);
+            } catch (error) {
+                console.error('Clean trigger error:', error);
+                statusDiv.className = 'status-msg error';
+                statusDiv.textContent = `Failed: ${error.message}`;
+                await checkCleanStatus();
+            }
+        }
+
+        async function cancelClean() {
+            const cancelBtn = document.getElementById('cancelCleanBtn');
+            const statusDiv = document.getElementById('cleanStatusMessage');
+
+            cancelBtn.disabled = true;
+            statusDiv.className = 'status-msg';
+            statusDiv.textContent = '';
+
+            try {
+                const response = await fetch('/api/device/cancel-clean', {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || `HTTP ${response.status}`);
+                }
+
+                if (data.success) {
+                    statusDiv.className = 'status-msg success';
+                    statusDiv.textContent = 'Cleaning request cancelled.';
+                } else {
+                    statusDiv.className = 'status-msg error';
+                    statusDiv.textContent = data.message || 'Could not cancel (device already picked it up).';
+                }
+
+                await checkCleanStatus();
+            } catch (error) {
+                console.error('Cancel clean error:', error);
+                statusDiv.className = 'status-msg error';
+                statusDiv.textContent = `Failed to cancel: ${error.message}`;
+                await checkCleanStatus();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setCurrentDateTime();
+            fetchLogs();
+            checkCleanStatus();
+            setInterval(checkCleanStatus, 2500);
+        });
     </script>
 </body>
 </html>
