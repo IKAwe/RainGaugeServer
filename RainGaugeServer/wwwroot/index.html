@@ -397,7 +397,12 @@
             const statusDiv = document.getElementById('statusMessage');
 
             const millimeters = parseFloat(mmInput.value);
-            const deviceTimestamp = timeInput.value ? new Date(timeInput.value).toISOString() : new Date().toISOString();
+            if (!timeInput.value) {
+                statusDiv.className = 'status-msg error';
+                statusDiv.textContent = 'Please enter a device timestamp.';
+                return;
+            }
+            const deviceTimestamp = new Date(timeInput.value).toISOString();
 
             if (isNaN(millimeters) || millimeters < 0) {
                 statusDiv.className = 'status-msg error';

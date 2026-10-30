@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace RainGaugeServer.Models
 {
@@ -13,6 +14,8 @@ namespace RainGaugeServer.Models
     public class RainPayload
     {
         public double Millimeters { get; set; }
-        public DateTime? DeviceTimestamp { get; set; }
+
+        [Required]
+        public DateTime DeviceTimestamp { get; set; }
     }
 }

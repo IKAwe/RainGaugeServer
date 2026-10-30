@@ -22,10 +22,15 @@ namespace RainGaugeServer.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> ReceiveData([FromBody] RainPayload payload)
         {
+            if (payload.DeviceTimestamp == default)
+            {
+                return BadRequest(new { message = "DeviceTimestamp is required and cannot be empty." });
+            }
+
             var reading = new RainReading
             {
                 Millimeters = payload.Millimeters,
-                DeviceTimestamp = payload.DeviceTimestamp ?? DateTime.UtcNow,
+                DeviceTimestamp = payload.DeviceTimestamp,
                 CreatedAt = DateTime.UtcNow
             };
             
