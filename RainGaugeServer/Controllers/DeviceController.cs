@@ -57,6 +57,135 @@ namespace RainGaugeServer.Controllers
             return Ok(logs);
         }
 
+        // GET: api/device/chart
+        [HttpGet("chart")]
+        public async Task<IActionResult> GetChartData(
+            [FromQuery] string view = "day",
+            [FromQuery] int? year = null,
+            [FromQuery] int? month = null,
+            [FromQuery] int? day = null)
+        {
+            var now = DateTime.UtcNow;
+            int y = year ?? now.Year;
+            int m = month ?? now.Month;
+            int d = day ?? now.Day;
+
+            m = Math.Clamp(m, 1, 12);
+            int maxDays = DateTime.DaysInMonth(y, m);
+            d = Math.Clamp(d, 1, maxDays);
+
+            string currentView = view?.ToLowerInvariant() switch
+            {
+                "year" => "year",
+                "month" => "month",
+                _ => "day"
+            };
+
+            DateTime rangeStart;
+            DateTime rangeEnd;
+
+            switch (currentView)
+            {
+                case "year":
+                    rangeStart = new DateTime(y, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                    rangeEnd = rangeStart.AddYears(1);
+                    break;
+
+                case "month":
+                    rangeStart = new DateTime(y, m, 1, 0, 0, 0, DateTimeKind.Utc);
+                    rangeEnd = rangeStart.AddMonths(1);
+                    break;
+
+                default: // "day"
+                    rangeStart = new DateTime(y, m, d, 0, 0, 0, DateTimeKind.Utc);
+                    rangeEnd = rangeStart.AddDays(1);
+                    break;
+            }
+
+            var readings = await _context.RainReadings
+                .Where(r => r.DeviceTimestamp >= rangeStart && r.DeviceTimestamp < rangeEnd)
+                .Select(r => new { r.DeviceTimestamp, r.Millimeters })
+                .ToListAsync();
+
+            List<string> labels = new();
+            List<double> values = new();
+            string title;
+            string subtitle;
+            string? parentView = null;
+
+            switch (currentView)
+            {
+                case "year":
+                {
+                    title = $"{y}";
+                    subtitle = $"Rainfall per month in {y}";
+                    string[] monthNames = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+                    for (int mo = 1; mo <= 12; mo++)
+                    {
+                        labels.Add(monthNames[mo - 1]);
+                        double sum = readings
+                            .Where(r => r.DeviceTimestamp.Month == mo)
+                            .Sum(r => r.Millimeters);
+                        values.Add(Math.Round(sum, 2));
+                    }
+                    break;
+                }
+                case "month":
+                {
+                    var monthDate = new DateTime(y, m, 1);
+                    title = monthDate.ToString("MMMM yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                    subtitle = $"Daily rainfall in {title}";
+                    parentView = "year";
+                    int daysCount = DateTime.DaysInMonth(y, m);
+                    for (int dayNum = 1; dayNum <= daysCount; dayNum++)
+                    {
+                        labels.Add(dayNum.ToString());
+                        double sum = readings
+                            .Where(r => r.DeviceTimestamp.Day == dayNum)
+                            .Sum(r => r.Millimeters);
+                        values.Add(Math.Round(sum, 2));
+                    }
+                    break;
+                }
+                default: // "day"
+                {
+                    var dayDate = new DateTime(y, m, d);
+                    title = dayDate.ToString("yyyy-MM-dd");
+                    subtitle = $"Hourly rainfall on {dayDate.ToString("MMMM d, yyyy", System.Globalization.CultureInfo.InvariantCulture)}";
+                    parentView = "month";
+                    for (int hr = 0; hr < 24; hr++)
+                    {
+                        labels.Add($"{hr:D2}:00");
+                        double sum = readings
+                            .Where(r => r.DeviceTimestamp.Hour == hr)
+                            .Sum(r => r.Millimeters);
+                        values.Add(Math.Round(sum, 2));
+                    }
+                    break;
+                }
+            }
+
+            double totalMm = Math.Round(values.Sum(), 2);
+            double peakMm = values.Count > 0 ? Math.Round(values.Max(), 2) : 0;
+
+            return Ok(new
+            {
+                view = currentView,
+                year = y,
+                month = m,
+                day = d,
+                title,
+                subtitle,
+                parentView,
+                labels,
+                values,
+                totalMm,
+                peakMm,
+                drillable = currentView != "day",
+                drillTarget = currentView == "year" ? "month" : (currentView == "month" ? "day" : null)
+            });
+        }
+
         // POST: api/device/trigger-clean
         [HttpPost("trigger-clean")]
         public IActionResult TriggerClean()

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rain gauge dashboard</title>
+    <title>Rain gauge</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -35,25 +36,25 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 860px;
             margin: 0 auto;
         }
 
         header {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         h1 {
-            font-size: 1.75rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: #0f172a;
         }
 
         .swagger-link {
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             color: var(--primary);
             text-decoration: none;
             font-weight: 500;
@@ -65,17 +66,17 @@
 
         .card {
             background-color: var(--card-bg);
-            border-radius: 10px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
             border: 1px solid var(--border);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
         }
 
         .card-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            margin-bottom: 1rem;
+            margin-bottom: 0.85rem;
             color: #1e293b;
             display: flex;
             align-items: center;
@@ -84,7 +85,7 @@
 
         .form-group {
             display: flex;
-            gap: 1rem;
+            gap: 0.85rem;
             align-items: flex-end;
             flex-wrap: wrap;
         }
@@ -92,18 +93,18 @@
         .input-field {
             display: flex;
             flex-direction: column;
-            gap: 0.35rem;
+            gap: 0.3rem;
         }
 
         .input-field label {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--muted);
         }
 
         input[type="number"], input[type="datetime-local"] {
-            padding: 0.6rem 0.9rem;
-            font-size: 1rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.95rem;
             border: 1px solid var(--border);
             border-radius: 6px;
             outline: none;
@@ -112,11 +113,11 @@
         }
 
         input[type="number"] {
-            width: 150px;
+            width: 130px;
         }
 
         input[type="datetime-local"] {
-            width: 230px;
+            width: 210px;
         }
 
         input:focus {
@@ -124,8 +125,8 @@
         }
 
         button {
-            padding: 0.6rem 1.25rem;
-            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
             font-weight: 500;
             background-color: var(--primary);
             color: white;
@@ -133,7 +134,7 @@
             border-radius: 6px;
             cursor: pointer;
             transition: background-color 0.2s, border-color 0.2s, color 0.2s;
-            height: 42px;
+            height: 38px;
         }
 
         button:hover {
@@ -160,8 +161,8 @@
             background-color: transparent;
             color: var(--muted);
             border: 1px solid var(--border);
-            font-size: 0.875rem;
-            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            padding: 0.3rem 0.65rem;
             height: auto;
         }
 
@@ -171,8 +172,8 @@
         }
 
         .status-msg {
-            margin-top: 0.75rem;
-            font-size: 0.9rem;
+            margin-top: 0.65rem;
+            font-size: 0.85rem;
             display: none;
         }
 
@@ -186,7 +187,7 @@
             display: block;
         }
 
-        /* Cleaning Section Row */
+        /* Cleaning row */
         .cleaning-row {
             display: flex;
             align-items: center;
@@ -198,23 +199,22 @@
         .cleaning-status {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            flex-wrap: wrap;
+            gap: 0.5rem;
         }
 
         .status-label {
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--muted);
         }
 
         .status-pill {
             display: inline-block;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            padding: 0.2rem 0.65rem;
+            padding: 0.15rem 0.55rem;
             border-radius: 9999px;
-            letter-spacing: 0.025em;
+            letter-spacing: 0.02em;
         }
 
         .status-pill.idle {
@@ -229,11 +229,6 @@
             border: 1px solid #fcd34d;
         }
 
-        .cleaning-note {
-            font-size: 0.875rem;
-            color: var(--muted);
-        }
-
         .table-responsive {
             overflow-x: auto;
         }
@@ -241,7 +236,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             text-align: left;
         }
 
@@ -249,12 +244,12 @@
             background-color: #f8fafc;
             color: var(--muted);
             font-weight: 600;
-            padding: 0.75rem 1rem;
+            padding: 0.65rem 0.85rem;
             border-bottom: 2px solid var(--border);
         }
 
         td {
-            padding: 0.75rem 1rem;
+            padding: 0.65rem 0.85rem;
             border-bottom: 1px solid var(--border);
         }
 
@@ -267,54 +262,163 @@
             background-color: #e0e7ff;
             color: #3730a3;
             font-weight: 600;
-            padding: 0.2rem 0.5rem;
+            padding: 0.15rem 0.45rem;
             border-radius: 4px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .empty-state {
             text-align: center;
-            padding: 2rem;
+            padding: 1.5rem;
             color: var(--muted);
+        }
+
+        /* Chart header & controls */
+        .card-header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 0.65rem;
+        }
+
+        .chart-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-group {
+            display: inline-flex;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: #f1f5f9;
+        }
+
+        .btn-toggle, .btn-nav {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: transparent;
+            color: var(--muted);
+            border: none;
+            border-radius: 0;
+            height: auto;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-toggle:hover, .btn-nav:hover {
+            color: var(--text);
+            background-color: #e2e8f0;
+        }
+
+        .btn-toggle.active {
+            background-color: var(--primary);
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .btn-toggle:not(:last-child), .btn-nav:not(:last-child) {
+            border-right: 1px solid var(--border);
+        }
+
+        .breadcrumb-container {
+            font-size: 0.8rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .breadcrumb-item {
+            cursor: pointer;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb-item.current {
+            color: var(--text);
+            font-weight: 600;
+            cursor: default;
+        }
+
+        .breadcrumb-item.current:hover {
+            text-decoration: none;
+        }
+
+        .chart-meta-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            padding: 0.45rem 0.75rem;
+            background-color: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .chart-stats {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            color: var(--text);
+        }
+
+        .stat-divider {
+            color: var(--border);
+        }
+
+        .chart-canvas-wrapper {
+            position: relative;
+            width: 100%;
+            height: 290px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Rain Gauge</h1>
-            <a href="/swagger" target="_blank" class="swagger-link">Open Swagger API &rarr;</a>
+            <h1>Rain gauge</h1>
+            <a href="/swagger" target="_blank" class="swagger-link">Swagger &rarr;</a>
         </header>
 
-        <!-- Test data submission -->
+        <!-- New reading -->
         <section class="card">
-            <h2 class="card-title">Send test reading</h2>
+            <h2 class="card-title">New reading</h2>
             <form id="submissionForm" onsubmit="submitData(event)" class="form-group">
                 <div class="input-field">
-                    <label for="millimeters">Rainfall (mm):</label>
+                    <label for="millimeters">Rainfall (mm)</label>
                     <input type="number" id="millimeters" name="millimeters" step="any" min="0" value="2.5" required>
                 </div>
                 <div class="input-field">
-                    <label for="deviceTimestamp">Device timestamp:</label>
+                    <label for="deviceTimestamp">Timestamp</label>
                     <input type="datetime-local" id="deviceTimestamp" name="deviceTimestamp" required>
                 </div>
-                <button type="submit" id="submitBtn">Send reading</button>
+                <button type="submit" id="submitBtn">Send</button>
             </form>
             <div id="statusMessage" class="status-msg"></div>
         </section>
 
-        <!-- Gauge cleaning -->
+        <!-- Cleaning -->
         <section class="card">
-            <h2 class="card-title">Gauge cleaning</h2>
+            <h2 class="card-title">Cleaning</h2>
             <div class="cleaning-row">
                 <div class="cleaning-status">
                     <span class="status-label">Status:</span>
                     <span id="cleanStatusPill" class="status-pill idle">Ready</span>
-                    <span id="cleanStatusDesc" class="cleaning-note">No active requests.</span>
                 </div>
                 <div>
-                    <button type="button" id="cleanBtn" onclick="triggerClean()">Clean now</button>
-                    <button type="button" class="btn-danger" id="cancelCleanBtn" onclick="cancelClean()" style="display: none;">Cancel request</button>
+                    <button type="button" id="cleanBtn" onclick="triggerClean()">Clean</button>
+                    <button type="button" class="btn-danger" id="cancelCleanBtn" onclick="cancelClean()" style="display: none;">Cancel</button>
                 </div>
             </div>
             <div id="cleanStatusMessage" class="status-msg"></div>
@@ -323,31 +427,74 @@
         <!-- Recent readings -->
         <section class="card">
             <div class="card-title">
-                <span>Recent readings (last 20)</span>
+                <span>Recent readings</span>
                 <button type="button" class="btn-refresh" onclick="fetchLogs()">Refresh</button>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 70px;">ID</th>
-                            <th>Device timestamp</th>
-                            <th>Database timestamp</th>
-                            <th style="width: 140px;">Rainfall (mm)</th>
+                            <th style="width: 60px;">ID</th>
+                            <th>Device time</th>
+                            <th>Server time</th>
+                            <th style="width: 120px;">Rainfall</th>
                         </tr>
                     </thead>
                     <tbody id="logsTableBody">
                         <tr>
-                            <td colspan="4" class="empty-state">Loading records...</td>
+                            <td colspan="4" class="empty-state">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- Rainfall chart -->
+        <section class="card">
+            <div class="card-header-flex">
+                <div>
+                    <h2 class="card-title" style="margin-bottom: 0.15rem;">Rainfall</h2>
+                    <div class="breadcrumb-container" id="chartBreadcrumbs"></div>
+                </div>
+                <div class="chart-controls">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn-toggle active" id="btnModeDay" onclick="setChartMode('day')">Day</button>
+                        <button type="button" class="btn-toggle" id="btnModeMonth" onclick="setChartMode('month')">Month</button>
+                        <button type="button" class="btn-toggle" id="btnModeYear" onclick="setChartMode('year')">Year</button>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn-nav" onclick="navigateChart(-1)" title="Previous">&larr;</button>
+                        <button type="button" class="btn-nav" onclick="resetChartToToday()" title="Today">Today</button>
+                        <button type="button" class="btn-nav" onclick="navigateChart(1)" title="Next">&rarr;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="chart-meta-bar">
+                <div class="chart-stats">
+                    <span>Total: <strong id="chartStatTotal">0.0 mm</strong></span>
+                    <span class="stat-divider">&bull;</span>
+                    <span>Peak: <strong id="chartStatPeak">0.0 mm</strong></span>
+                </div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="chart-canvas-wrapper">
+                <canvas id="rainfallChart"></canvas>
             </div>
         </section>
     </div>
 
     <script>
         let isCleanPending = false;
+        let chartInstance = null;
+        let chartState = {
+            view: 'day',
+            year: new Date().getFullYear(),
+            month: new Date().getMonth() + 1,
+            day: new Date().getDate()
+        };
 
         function setCurrentDateTime() {
             const now = new Date();
@@ -361,12 +508,12 @@
             try {
                 const response = await fetch('/api/device/logs');
                 if (!response.ok) {
-                    throw new Error(`Server error: HTTP ${response.status}`);
+                    throw new Error(`HTTP ${response.status}`);
                 }
                 const logs = await response.json();
                 
                 if (!logs || logs.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">No records found.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="4" class="empty-state">No records.</td></tr>';
                     return;
                 }
 
@@ -384,7 +531,7 @@
                 }).join('');
             } catch (error) {
                 console.error('Failed to load logs:', error);
-                tableBody.innerHTML = `<tr><td colspan="4" class="empty-state" style="color: var(--danger);">Failed to load logs: ${error.message}</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="4" class="empty-state" style="color: var(--danger);">Failed to load logs.</td></tr>`;
             }
         }
 
@@ -399,14 +546,14 @@
             const millimeters = parseFloat(mmInput.value);
             if (!timeInput.value) {
                 statusDiv.className = 'status-msg error';
-                statusDiv.textContent = 'Please enter a device timestamp.';
+                statusDiv.textContent = 'Enter timestamp.';
                 return;
             }
             const deviceTimestamp = new Date(timeInput.value).toISOString();
 
             if (isNaN(millimeters) || millimeters < 0) {
                 statusDiv.className = 'status-msg error';
-                statusDiv.textContent = 'Please enter a valid rainfall value in millimeters (>= 0).';
+                statusDiv.textContent = 'Enter valid rainfall.';
                 return;
             }
 
@@ -431,13 +578,14 @@
                 }
 
                 statusDiv.className = 'status-msg success';
-                statusDiv.textContent = `Saved: ${millimeters} mm.`;
+                statusDiv.textContent = `Saved ${millimeters} mm.`;
 
                 await fetchLogs();
+                await loadChartData();
             } catch (error) {
                 console.error('Submission error:', error);
                 statusDiv.className = 'status-msg error';
-                statusDiv.textContent = `Submission failed: ${error.message}`;
+                statusDiv.textContent = 'Submission failed.';
             } finally {
                 submitBtn.disabled = false;
             }
@@ -448,12 +596,10 @@
             const cleanBtn = document.getElementById('cleanBtn');
             const cancelBtn = document.getElementById('cancelCleanBtn');
             const pill = document.getElementById('cleanStatusPill');
-            const desc = document.getElementById('cleanStatusDesc');
 
             if (pending) {
                 pill.className = 'status-pill pending';
                 pill.textContent = 'Pending';
-                desc.textContent = 'Waiting for device to start...';
                 cleanBtn.disabled = true;
                 cleanBtn.style.display = 'none';
                 cancelBtn.style.display = 'inline-block';
@@ -461,7 +607,6 @@
             } else {
                 pill.className = 'status-pill idle';
                 pill.textContent = 'Ready';
-                desc.textContent = 'No active requests.';
                 cleanBtn.disabled = false;
                 cleanBtn.style.display = 'inline-block';
                 cancelBtn.style.display = 'none';
@@ -497,22 +642,22 @@
 
                 if (response.status === 409) {
                     statusDiv.className = 'status-msg error';
-                    statusDiv.textContent = data.message || 'Cleaning request is already pending.';
+                    statusDiv.textContent = 'Already pending.';
                     updateCleanUI(true);
                     return;
                 }
 
                 if (!response.ok) {
-                    throw new Error(data.message || `HTTP ${response.status}`);
+                    throw new Error(`HTTP ${response.status}`);
                 }
 
                 statusDiv.className = 'status-msg success';
-                statusDiv.textContent = 'Cleaning request sent.';
+                statusDiv.textContent = 'Cleaning requested.';
                 updateCleanUI(true);
             } catch (error) {
                 console.error('Clean trigger error:', error);
                 statusDiv.className = 'status-msg error';
-                statusDiv.textContent = `Failed: ${error.message}`;
+                statusDiv.textContent = 'Request failed.';
                 await checkCleanStatus();
             }
         }
@@ -533,30 +678,209 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.message || `HTTP ${response.status}`);
+                    throw new Error(`HTTP ${response.status}`);
                 }
 
                 if (data.success) {
                     statusDiv.className = 'status-msg success';
-                    statusDiv.textContent = 'Cleaning request cancelled.';
+                    statusDiv.textContent = 'Request cancelled.';
                 } else {
                     statusDiv.className = 'status-msg error';
-                    statusDiv.textContent = data.message || 'Could not cancel (device already picked it up).';
+                    statusDiv.textContent = 'Could not cancel.';
                 }
 
                 await checkCleanStatus();
             } catch (error) {
                 console.error('Cancel clean error:', error);
                 statusDiv.className = 'status-msg error';
-                statusDiv.textContent = `Failed to cancel: ${error.message}`;
+                statusDiv.textContent = 'Cancel failed.';
                 await checkCleanStatus();
             }
+        }
+
+        /* ---------------- Chart & Drill-down ---------------- */
+
+        async function loadChartData() {
+            try {
+                const url = `/api/device/chart?view=${chartState.view}&year=${chartState.year}&month=${chartState.month}&day=${chartState.day}`;
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                renderChart(data);
+            } catch (err) {
+                console.error('Failed to load chart data:', err);
+            }
+        }
+
+        function updateBreadcrumbsAndMeta(data) {
+            const breadcrumbs = document.getElementById('chartBreadcrumbs');
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthName = monthNames[chartState.month - 1];
+
+            if (chartState.view === 'year') {
+                breadcrumbs.innerHTML = `<span class="breadcrumb-item current">${chartState.year}</span>`;
+            } else if (chartState.view === 'month') {
+                breadcrumbs.innerHTML = `
+                    <span class="breadcrumb-item" onclick="setChartMode('year')">${chartState.year}</span>
+                    <span>&rsaquo;</span>
+                    <span class="breadcrumb-item current">${monthName}</span>
+                `;
+            } else {
+                const dayFormatted = String(chartState.day).padStart(2, '0');
+                breadcrumbs.innerHTML = `
+                    <span class="breadcrumb-item" onclick="setChartMode('year')">${chartState.year}</span>
+                    <span>&rsaquo;</span>
+                    <span class="breadcrumb-item" onclick="setChartMode('month')">${monthName}</span>
+                    <span>&rsaquo;</span>
+                    <span class="breadcrumb-item current">${dayFormatted} ${monthName}</span>
+                `;
+            }
+
+            document.getElementById('chartStatTotal').textContent = `${data.totalMm.toFixed(1)} mm`;
+            document.getElementById('chartStatPeak').textContent = `${data.peakMm.toFixed(1)} mm`;
+
+            document.getElementById('btnModeDay').classList.toggle('active', chartState.view === 'day');
+            document.getElementById('btnModeMonth').classList.toggle('active', chartState.view === 'month');
+            document.getElementById('btnModeYear').classList.toggle('active', chartState.view === 'year');
+        }
+
+        function renderChart(data) {
+            updateBreadcrumbsAndMeta(data);
+
+            const ctx = document.getElementById('rainfallChart').getContext('2d');
+
+            const chartConfig = {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Rainfall',
+                        data: data.values,
+                        backgroundColor: 'rgba(37, 99, 235, 0.75)',
+                        hoverBackgroundColor: 'rgba(29, 78, 216, 0.9)',
+                        borderColor: '#2563eb',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        maxBarThickness: 34
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.parsed.y} mm`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: { size: 11 },
+                                color: '#64748b'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9'
+                            },
+                            ticks: {
+                                font: { size: 11 },
+                                color: '#64748b',
+                                callback: function(value) {
+                                    return value + ' mm';
+                                }
+                            }
+                        }
+                    },
+                    onHover: (event, chartElement) => {
+                        event.native.target.style.cursor = (chartElement.length > 0 && data.drillable) ? 'pointer' : 'default';
+                    }
+                }
+            };
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, chartConfig);
+
+            const canvas = document.getElementById('rainfallChart');
+            canvas.onclick = (evt) => {
+                if (!data.drillable) return;
+                const points = chartInstance.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+                if (points.length > 0) {
+                    const index = points[0].index;
+                    onBarClick(index, data);
+                }
+            };
+        }
+
+        function onBarClick(index, data) {
+            if (chartState.view === 'year') {
+                chartState.month = index + 1;
+                chartState.view = 'month';
+                loadChartData();
+            } else if (chartState.view === 'month') {
+                chartState.day = index + 1;
+                chartState.view = 'day';
+                loadChartData();
+            }
+        }
+
+        function setChartMode(mode) {
+            if (chartState.view === mode) return;
+            chartState.view = mode;
+            loadChartData();
+        }
+
+        function navigateChart(delta) {
+            if (chartState.view === 'year') {
+                chartState.year += delta;
+            } else if (chartState.view === 'month') {
+                chartState.month += delta;
+                if (chartState.month > 12) {
+                    chartState.month = 1;
+                    chartState.year++;
+                } else if (chartState.month < 1) {
+                    chartState.month = 12;
+                    chartState.year--;
+                }
+            } else {
+                const current = new Date(chartState.year, chartState.month - 1, chartState.day);
+                current.setDate(current.getDate() + delta);
+                chartState.year = current.getFullYear();
+                chartState.month = current.getMonth() + 1;
+                chartState.day = current.getDate();
+            }
+            loadChartData();
+        }
+
+        function resetChartToToday() {
+            const now = new Date();
+            chartState.year = now.getFullYear();
+            chartState.month = now.getMonth() + 1;
+            chartState.day = now.getDate();
+            loadChartData();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             setCurrentDateTime();
             fetchLogs();
             checkCleanStatus();
+            loadChartData();
             setInterval(checkCleanStatus, 2500);
         });
     </script>
